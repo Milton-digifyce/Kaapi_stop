@@ -1073,7 +1073,7 @@ mm.add("(min-width: 769px)", () => {
   // 3b. Ownership enter
   gsap.to(cup, {
     scrollTrigger: { trigger: "#ownership", start: "top 70%", end: "top 20%", scrub: 1.2 },
-    xPercent: -236, yPercent: -30, scale: 0.7, rotation: 360, immediateRender: false
+    left: "50%", top: "50%", xPercent: -50, yPercent: -50, scale: 0.7, rotation: 360, immediateRender: false
   });
 
   // Cards Split
@@ -1083,7 +1083,7 @@ mm.add("(min-width: 769px)", () => {
   // 3c. Ownership exit / Enter Testimonials
   gsap.to(cup, {
     scrollTrigger: { trigger: "#testimonials", start: "top 80%", end: "top 30%", scrub: 1.2 },
-    xPercent: -50, scale: 1, rotation: 335, immediateRender: false
+    left: "80%", top: "50%", xPercent: -50, yPercent: -50, scale: 1, rotation: 335, immediateRender: false
   });
 
   // 4. To Final
