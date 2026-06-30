@@ -1046,7 +1046,7 @@ mm.add("(min-width: 769px)", () => {
   ScrollTrigger.create({
     trigger: "#cost",
     start: "top 20%",
-    end: "max",
+    end: "+=50000", // Fixes overscroll unpinning behavior
     pin: "#floating-cup",
     pinSpacing: false
   });
@@ -1094,7 +1094,7 @@ mm.add("(min-width: 769px)", () => {
     left: "50%", top: "50%", xPercent: -50, yPercent: -50, scale: 1.2, rotation: 360, immediateRender: false
   });
 
-  // Landing: stop float, settle once when cup arrives in #final (smoothed-out scale-punch)
+  // Landing: stop float, settle once when cup arrives in #final 
   let _cupLanded = false;
   ScrollTrigger.create({
     trigger: "#final",
@@ -1103,12 +1103,14 @@ mm.add("(min-width: 769px)", () => {
       cup.querySelector('.cup-floater')?.classList.remove('is-floating');
       if (_cupLanded) return;
       _cupLanded = true;
+      gsap.killTweensOf(cup); // Crucial: Stop timeline scrubbing conflicts
       gsap.to(cup, { scale: 1.28, duration: 0.3, ease: "sine.out",
         onComplete: () => gsap.to(cup, { scale: 1.2, duration: 0.85, ease: "elastic.out(1, 0.65)" })
       });
     },
     onLeaveBack: () => {
       _cupLanded = false;
+      gsap.killTweensOf(cup); // Kill the bounce if they scroll up fast
       gsap.set(cup, { scale: 1.2 });
       cup.querySelector('.cup-floater')?.classList.add('is-floating');
     }
@@ -1123,7 +1125,7 @@ mm.add("(max-width: 768px)", () => {
   ScrollTrigger.create({
     trigger: "#cost",
     start: "top 20%",
-    end: "max",
+    end: "+=50000", // Fixes overscroll unpinning behavior
     pin: "#floating-cup",
     pinSpacing: false
   });
@@ -1159,7 +1161,7 @@ mm.add("(max-width: 768px)", () => {
     left: "50%", top: "45%", xPercent: -50, yPercent: -50, scale: 1.3, rotation: 360, immediateRender: false
   });
 
-  // Landing: stop float, settle once when cup arrives in #final (smoothed-out scale-punch, mobile)
+  // Landing
   let _cupLandedM = false;
   ScrollTrigger.create({
     trigger: "#final",
@@ -1168,12 +1170,14 @@ mm.add("(max-width: 768px)", () => {
       cup.querySelector('.cup-floater')?.classList.remove('is-floating');
       if (_cupLandedM) return;
       _cupLandedM = true;
+      gsap.killTweensOf(cup);
       gsap.to(cup, { scale: 1.38, duration: 0.3, ease: "sine.out",
         onComplete: () => gsap.to(cup, { scale: 1.3, duration: 0.85, ease: "elastic.out(1, 0.65)" })
       });
     },
     onLeaveBack: () => {
       _cupLandedM = false;
+      gsap.killTweensOf(cup);
       gsap.set(cup, { scale: 1.3 });
       cup.querySelector('.cup-floater')?.classList.add('is-floating');
     }
@@ -1191,19 +1195,23 @@ mm.add("(min-width: 769px) and (max-width: 1100px)", () => {
 
 
 // ── FINAL POSITION LOCK ──
-// Shifts the internal wrapper up smoothly as the footer scrolls into view,
-// avoiding conflicts with GSAP's pin transforms or CSS animations.
-gsap.to("#cup-scroll-shift", {
-  scrollTrigger: {
-    trigger: "footer",
-    start: "top bottom",
-    end: "bottom bottom",
-    scrub: true,
-    invalidateOnRefresh: true
-  },
-  y: () => -document.querySelector('footer').offsetHeight,
-  ease: "none"
-});
+// Shifts the internal wrapper up smoothly as the footer scrolls into view.
+// Forced fromTo coordinates map strictly to prevent offset-caching glitches.
+gsap.fromTo("#cup-scroll-shift", 
+  { y: 0 },
+  {
+    scrollTrigger: {
+      trigger: "footer",
+      start: "top bottom",
+      end: "bottom bottom",
+      scrub: true,
+      invalidateOnRefresh: true,
+      clamp: true // Strict boundary locking (GSAP 3.12+ required)
+    },
+    y: () => -document.querySelector('footer').offsetHeight,
+    ease: "none"
+  }
+);
 
 // ── SCROLL REVEAL ──
 const revealEls = document.querySelectorAll('.reveal');
